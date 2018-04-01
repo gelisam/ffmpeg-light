@@ -18,7 +18,7 @@ class HasWidth t where
 
 /*
 Creates an instance of settable field class. The assumption is that
-the first argument, the type name, is the name of bot the C and
+the first argument, the type name, is the name of both the C and
 Haskell types involved. This makes use of the HasPtr class whose
 single method, getPtr, with type "a -> Ptr ()", unwraps a raw Ptr from
 a value (typically a newtype around a Ptr).
