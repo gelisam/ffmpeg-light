@@ -10,7 +10,7 @@ module Codec.FFmpeg.Probe (
     -- * Streams
     AvStreamT, withStream, codecContext, codecName,
     codecMediaTypeName, streamBitrate, streamMetadata,
-    codec, streamImageSize,
+    codec, streamImageSize, streamSampleAspectRatio,
 
     -- * Dictionaries
     dictFoldM_
@@ -21,6 +21,7 @@ import Control.Monad.Catch ( MonadMask, finally )
 import Control.Monad.Reader
 import Control.Monad.Trans.Except
 import Data.Int ( Int64 )
+import Data.Ratio ( Ratio, (%) )
 import Foreign.C.String ( CString, peekCString, withCString )
 import Foreign.C.Types ( CInt(..) )
 import Foreign.Marshal.Utils ( with )
@@ -120,11 +121,20 @@ streamBitrate :: MonadIO m => AVCodecContext -> AvStreamT m Int
 streamBitrate cctx = liftIO $ getBitRate cctx >>= return . fromIntegral
 
 -- |
--- Gives the (width, height) of a video stream in pixels, not accounting for the pixel aspect ratio.
+-- Gives the (width, height) of a video stream in pixels. Note that pixels might not be square, see 'streamSampleAspectRatio'.
 streamImageSize :: MonadIO m => AVCodecContext -> AvStreamT m (Int, Int)
 streamImageSize cctx = liftIO $ (,)
     <$> liftM fromIntegral (getWidth cctx)
     <*> liftM fromIntegral (getHeight cctx)
+
+-- |
+-- Gives the width:height aspect ratio of a pixel, if known. If unknown, the most likely value is 1:1, meaning square pixels.
+streamSampleAspectRatio :: MonadIO m => AVCodecContext -> AvStreamT m (Maybe (Ratio Int))
+streamSampleAspectRatio cctx = do
+    AVRational num den <- liftIO $ getAspectRatio cctx
+    if num == 0
+        then return Nothing
+        else return $ Just $ fromIntegral num % fromIntegral den
 
 streamMetadata :: MonadIO m => AvStreamT m AVDictionary
 streamMetadata = ask >>= liftIO . (#peek AVStream, metadata) . getPtr
