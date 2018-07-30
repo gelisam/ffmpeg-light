@@ -10,7 +10,7 @@ module Codec.FFmpeg.Probe (
     -- * Streams
     AvStreamT, withStream, codecContext, codecName,
     codecMediaTypeName, streamBitrate, streamMetadata,
-    codec, streamImageSize, streamSampleAspectRatio, streamFrameRate,
+    codec, streamImageSize, streamSampleAspectRatio, streamFps,
 
     -- * Dictionaries
     dictFoldM_
@@ -138,8 +138,8 @@ streamSampleAspectRatio cctx = do
 
 -- |
 -- Gives the number of frames per second. 'Nothing' if the frame rate varies over the course of the stream.
-streamFrameRate :: MonadIO m => AVCodecContext -> AvStreamT m (Maybe (Ratio Int))
-streamFrameRate cctx = do
+streamFps :: MonadIO m => AVCodecContext -> AvStreamT m (Maybe (Ratio Int))
+streamFps cctx = do
     AVRational num den <- liftIO $ getFrameRate cctx
     if num == 0
         then return Nothing
