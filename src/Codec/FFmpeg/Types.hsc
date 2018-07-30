@@ -78,6 +78,7 @@ newtype AVCodecContext = AVCodecContext (Ptr ()) deriving (Storable, HasPtr)
 #mkField CodecID, AVCodecID
 #mkField PrivData, (Ptr ())
 #mkField AspectRatio, AVRational
+#mkField FrameRate, AVRational
 
 #hasField AVCodecContext, Width, width
 #hasField AVCodecContext, Height, height
@@ -88,6 +89,7 @@ newtype AVCodecContext = AVCodecContext (Ptr ()) deriving (Storable, HasPtr)
 #hasField AVCodecContext, CodecID, codec_id
 #hasField AVCodecContext, PrivData, priv_data
 #hasField AVCodecContext, AspectRatio, sample_aspect_ratio
+#hasField AVCodecContext, FrameRate, framerate
 
 newtype AVStream = AVStream (Ptr ()) deriving (Storable, HasPtr)
 
