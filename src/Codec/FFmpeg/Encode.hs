@@ -106,7 +106,7 @@ data EncodingParams =
                  -- the output file name. If 'Just', then this codec
                  -- is manually chosen.
                  , epPixelFormat :: Maybe AVPixelFormat
-                 -- ^ If 'Nothing', automatically chose a pixel format
+                 -- ^ If 'Nothing', automatically choose a pixel format
                  -- based on the output codec. If 'Just', force the
                  -- selected pixel format.
                  , epPreset :: String
