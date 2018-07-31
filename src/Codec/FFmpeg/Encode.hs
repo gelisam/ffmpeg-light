@@ -18,6 +18,9 @@ import Data.Bits
 import Data.IORef
 import Data.Maybe (fromMaybe)
 import Data.Ord (comparing)
+import Data.Ratio (Ratio)
+import qualified Data.Ratio as R
+import Data.Foldable (for_)
 import Data.Traversable (for)
 import Data.Vector.Storable (Vector)
 import qualified Data.Vector.Storable as V
@@ -109,7 +112,7 @@ data EncodingParams =
                  -- ^ If 'Nothing', automatically choose a pixel format
                  -- based on the output codec. If 'Just', force the
                  -- selected pixel format.
-                 , epPixelAspectRatio :: Maybe AVRational
+                 , epPixelAspectRatio :: Maybe (Ratio CInt)
                  -- ^ If 'Nothing', video players typically default to
                  -- 1:1, so square pixels. If 'Just', force the width:height
                  -- pixel aspect ratio to the given ratio.
@@ -170,7 +173,9 @@ initStream ep oc = do
                            | codec == avCodecIdRawvideo -> avPixFmtRgb24
                            | codec == avCodecIdGif -> avPixFmtPal8
                            | otherwise -> avPixFmtYuv420p
-  mapM_ (setAspectRatio ctx) (epPixelAspectRatio ep)
+  for_ (epPixelAspectRatio ep) $ \pixelAspectRatio -> do
+    setAspectRatio ctx $ AVRational (R.numerator   pixelAspectRatio)
+                                    (R.denominator pixelAspectRatio)
 
   -- Some formats want stream headers to be separate
   needsHeader <- checkFlag avfmtGlobalheader <$>
