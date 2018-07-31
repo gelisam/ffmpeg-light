@@ -109,6 +109,10 @@ data EncodingParams =
                  -- ^ If 'Nothing', automatically choose a pixel format
                  -- based on the output codec. If 'Just', force the
                  -- selected pixel format.
+                 , epPixelAspectRatio :: Maybe AVRational
+                 -- ^ If 'Nothing', video players typically default to
+                 -- 1:1, so square pixels. If 'Just', force the width:height
+                 -- pixel aspect ratio to the given ratio.
                  , epPreset :: String
                  -- ^ Encoder-specific hints. For h264, the default
                  -- preset is @\"medium\"@ (other options are
@@ -126,12 +130,12 @@ data EncodingParams =
 -- | Use default parameters for a video of the given width and
 -- height, forcing the choice of the h264 encoder.
 defaultH264 :: CInt -> CInt -> EncodingParams
-defaultH264 w h = EncodingParams w h 30 (Just avCodecIdH264) Nothing "medium" Nothing
+defaultH264 w h = EncodingParams w h 30 (Just avCodecIdH264) Nothing Nothing "medium" Nothing
 
 -- | Use default parameters for a video of the given width and
 -- height. The output format is determined by the output file name.
 defaultParams :: CInt -> CInt -> EncodingParams
-defaultParams w h = EncodingParams w h 30 Nothing Nothing "" Nothing
+defaultParams w h = EncodingParams w h 30 Nothing Nothing Nothing "" Nothing
 
 -- | Determine if the bitwise intersection of two values is non-zero.
 checkFlag :: Bits a => a -> a -> Bool
@@ -166,6 +170,7 @@ initStream ep oc = do
                            | codec == avCodecIdRawvideo -> avPixFmtRgb24
                            | codec == avCodecIdGif -> avPixFmtPal8
                            | otherwise -> avPixFmtYuv420p
+  mapM_ (setAspectRatio ctx) (epPixelAspectRatio ep)
 
   -- Some formats want stream headers to be separate
   needsHeader <- checkFlag avfmtGlobalheader <$>
