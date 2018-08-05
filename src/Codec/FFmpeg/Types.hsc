@@ -79,6 +79,7 @@ newtype AVCodecContext = AVCodecContext (Ptr ()) deriving (Storable, HasPtr)
 #mkField CodecID, AVCodecID
 #mkField PrivData, (Ptr ())
 #mkField RawAspectRatio, AVRational
+#mkField TicksPerFrame, CInt
 
 #hasField AVCodecContext, Width, width
 #hasField AVCodecContext, Height, height
@@ -89,6 +90,7 @@ newtype AVCodecContext = AVCodecContext (Ptr ()) deriving (Storable, HasPtr)
 #hasField AVCodecContext, CodecID, codec_id
 #hasField AVCodecContext, PrivData, priv_data
 #hasField AVCodecContext, RawAspectRatio, sample_aspect_ratio
+#hasField AVCodecContext, TicksPerFrame, ticks_per_frame
 
 getAspectRatio :: HasRawAspectRatio a => a -> IO (Maybe AVRational)
 getAspectRatio = fmap nonZeroAVRational . getRawAspectRatio
@@ -100,6 +102,12 @@ guessAspectRatio = fmap (fromMaybe (AVRational 1 1)) . getAspectRatio
 setAspectRatio :: HasRawAspectRatio a => a -> Maybe AVRational -> IO ()
 setAspectRatio x Nothing      = setRawAspectRatio x (AVRational 0 1)
 setAspectRatio x (Just ratio) = setRawAspectRatio x ratio
+
+getFps :: (HasTimeBase a, HasTicksPerFrame a) => a -> IO CDouble
+getFps x = do
+  timeBase <- getTimeBase x
+  ticksPerFrame <- getTicksPerFrame x
+  pure (1.0 / av_q2d timeBase / fromIntegral ticksPerFrame)
 
 newtype AVStream = AVStream (Ptr ()) deriving (Storable, HasPtr)
 
